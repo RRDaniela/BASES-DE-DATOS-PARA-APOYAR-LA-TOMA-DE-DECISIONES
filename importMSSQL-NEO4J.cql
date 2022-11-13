@@ -219,3 +219,37 @@ MATCH (F:Factura)
 MATCH (FD:Factura_D)
 WHERE F.Id_Factura = FD.Id_Factura
 MERGE (FD)-[:FORMA_PARTE_DE]->(F)
+
+//SALIDAS DEL $ALMACEN
+MATCH (sd:SalidaD)-[r:ES_PARTE_DE]->(s:Salida)
+MATCH (sd:SalidaD)-[r2:CONTIENE]->(a:Articulo)
+MATCH (s:Salida)-[r3:PROVIENE_DE]->(am:Almacen)
+WHERE am.Descripcion=$almacen
+RETURN sd, r, s, r2, a, r3, am
+
+//PRODUCTOS DE $CATEGORIA
+MATCH(a:Articulo)-[r:PERTENECE_A]->(ag:ArticuloGrupo)
+WHERE ag.descripcion = $CATEGORIA
+RETURN a, r, ag
+
+//$PRODUCTOS en facturas
+MATCH (a:Articulo)<-[r:CONTIENE]-(sd:SalidaD)
+MATCH (sd:SalidaD)-[r2:ES_PARTE_DE]->(s:Salida)
+MATCH (s:Salida)-[r3:PERTENECE_A_UN]->(c:Cliente)
+MATCH (c:Cliente)<-[r4:CORRESPONDE_A]-(f:Factura)
+MATCH (f:Factura)<-[r5:FORMA_PARTE_DE]-(fd:Factura_D)
+WHERE a.descripcion = $nombre
+RETURN a, r, sd, r2, s, r3, c, r4, f, r5, fd
+
+//TOP 5 NODOS CON MAYOR DEGREE
+MATCH (n)-[r]->(p)
+RETURN COUNT(r) AS DEGREE
+LIMIT 5
+
+//4.4. Realiza una consulta que muestre los proveedores, el número de productos y como 
+//lista los nombres de los productos de cada proveedor. 
+//NOT FINISHED
+MATCH (p:Proveedor)-[r:GENERAN]->(pf:ProveedorFactura)
+MATCH (pf:ProveedorFactura)-[r2:ENGLOBA]->(pfd:ProveedorFacturaD)
+MATCH (pfd:ProveedorFacturaD)-[r3:INCLUYE]->(a:Articulo)
+RETURN p.proveedor, distinct COUNT(a) as NúmeroProductos, distinct collect(a.descripcion)
