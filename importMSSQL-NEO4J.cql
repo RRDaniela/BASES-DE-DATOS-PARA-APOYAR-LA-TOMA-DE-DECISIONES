@@ -248,8 +248,11 @@ LIMIT 5
 
 //4.4. Realiza una consulta que muestre los proveedores, el número de productos y como 
 //lista los nombres de los productos de cada proveedor. 
-//NOT FINISHED
+//CORRECT
 MATCH (p:Proveedor)-[r:GENERAN]->(pf:ProveedorFactura)
 MATCH (pf:ProveedorFactura)-[r2:ENGLOBA]->(pfd:ProveedorFacturaD)
 MATCH (pfd:ProveedorFacturaD)-[r3:INCLUYE]->(a:Articulo)
-RETURN p.proveedor, distinct COUNT(a) as NúmeroProductos, distinct collect(a.descripcion)
+RETURN p.proveedor, COUNT(distinct a) as NúmeroProductos, collect(distinct a.descripcion)
+
+//4.5. Crea un nodo cliente con tu nombre y apellido
+CREATE (c:Cliente {Cliente:"Daniela Rodríguez"})
