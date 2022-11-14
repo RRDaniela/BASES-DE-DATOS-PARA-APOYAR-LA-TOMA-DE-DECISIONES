@@ -256,3 +256,33 @@ RETURN p.proveedor, COUNT(distinct a) as NúmeroProductos, collect(distinct a.de
 
 //4.5. Crea un nodo cliente con tu nombre y apellido
 CREATE (c:Cliente {Cliente:"Daniela Rodríguez"})
+
+//RECOMENDACIONES
+//5. Crea una recomendación de productos basada en tipo. Pruébala mostrando el producto que más sale del almacén 
+MATCH (oat:ArticuloTipo)<-[]-(oa:Articulo)<-[]-(osd:SalidaD)-[]->(s:Salida)<-[]-(sd:SalidaD)-[]->(a:Articulo{descripcion:"THINNER AMERICANO "})-[]->(at:ArticuloTipo)
+WHERE oa<>a AND (oa)-[:TIENE_UN]->(at)
+RETURN at.descripcion, a.descripcion, oa.descripcion, oat.descripcion, COUNT(s.Id_Salida) AS Num
+ORDER BY Num DESC, oa.descripcion
+LIMIT 1
+
+//6. Crea una recomendación de productos basada en grupo. Pruébala mostrando el producto que más sale del almacén
+MATCH (oag:ArticuloGrupo)<-[]-(oa:Articulo)<-[]-(osd:SalidaD)-[]->(s:Salida)<-[]-(sd:SalidaD)-[]->(a:Articulo{descripcion:"THINNER AMERICANO "})-[]->(ag:ArticuloGrupo)
+WHERE oa<>a AND (oa)-[:PERTENECE_A]->(ag)
+RETURN ag.descripcion, a.descripcion, oa.descripcion, oag.descripcion, COUNT(s.Id_Salida) AS Num
+ORDER BY Num DESC, oa.descripcion
+LIMIT 1
+
+//7. Crea una recomendación de productos basada en proveedor. Pruébala mostrando el producto que más sale del almacén
+MATCH (op:Proveedor)-[]->(opf:ProveedorFactura)-[]->(opfd:ProveedorFacturaD)-[]->(oa:Articulo)<-[]-(osd:SalidaD)-[]->(s:Salida)<-[]-(sd:SalidaD)-[]->(a:Articulo{descripcion:"THINNER AMERICANO "})<-[]-(pfd:ProveedorFacturaD)<-[]-(pf:ProveedorFactura)<-[]-(p:Proveedor)
+WHERE oa<>a AND (s)<-[:ES_PARTE_DE]-(osd)-[:CONTIENE]->(oa)<-[:INCLUYE]-(opfd)<-[:ENGLOBA]-(opf)<-[:GENERAN]-(p)
+RETURN p.proveedor, a.descripcion, op.proveedor, oa.descripcion, 
+ORDER BY Num DESC, oa.descripcion
+LIMIT 1  
+
+//8. Crea una recomendación de productos basada en color negro. Pruébala mostrando el producto que más sale del almacén.
+MATCH (a:Articulo{Color_base:"Negro"})<-[:CONTIENE]-(sd:SalidaD)-[:ES_PARTE_DE]->(s:Salida)<-[:ES_PARTE_DE]-(osd:SalidaD)-[:CONTIENE]->(oa:Articulo)
+WHERE oa<>a AND oa.Color_base = a.Color_base
+RETURN a.Color_base, a.descripcion, oa.Color_base, oa.descripcion, count(s.Id_Salida) AS Num
+ORDER BY Num DESC, oa.descripcion
+LIMIT 1  
+
